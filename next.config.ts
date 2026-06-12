@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
+import { nextTsApi } from "next-ts-api/config";
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+const withNextTsApi = nextTsApi({
+  dir: "app/api",
+  outDir: "types",
+  outFile: "next-ts-api.ts",
+});
 
-export default nextConfig;
+const nextConfig: NextConfig = {};
+
+export default withNextTsApi(nextConfig);

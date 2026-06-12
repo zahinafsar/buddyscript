@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { QueryProvider } from "@/providers/query-provider";
 
 export const metadata: Metadata = {
   title: "Buddy Script",
@@ -27,7 +28,7 @@ export default function RootLayout({
         <link rel="stylesheet" href="/assets/css/responsive.css" precedence="default" />
       </head>
       <body>
-        {children}
+        <QueryProvider>{children}</QueryProvider>
         <Script src="/assets/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
       </body>
     </html>
