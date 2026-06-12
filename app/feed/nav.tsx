@@ -20,6 +20,7 @@ import {
   Search,
 } from "@/icons";
 import { logout } from "@/app/(auth)/actions";
+import { Avatar } from "./avatar";
 
 export type NavUser = {
   name: string;
@@ -587,11 +588,7 @@ export function ProfileDropdown({ user }: { user: NavUser }) {
   return (
     <div className="_header_nav_profile">
       <div className="_header_nav_profile_image">
-        <img
-          src="/assets/images/profile.png"
-          alt="Image"
-          className="_nav_profile_img"
-        />
+        <Avatar name={user.name} size={24} />
       </div>
       <div className="_header_nav_dropdown">
         <p className="_header_nav_para">{user.name}</p>
@@ -610,11 +607,7 @@ export function ProfileDropdown({ user }: { user: NavUser }) {
       >
         <div className="_nav_profile_dropdown_info">
           <div className="_nav_profile_dropdown_image">
-            <img
-              src="/assets/images/profile.png"
-              alt="Image"
-              className="_nav_drop_img"
-            />
+            <Avatar name={user.name} size={54} />
           </div>
           <div className="_nav_profile_dropdown_info_txt">
             <h4 className="_nav_dropdown_title">{user.name}</h4>

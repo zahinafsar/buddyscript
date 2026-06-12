@@ -6,10 +6,11 @@ import { Article, Event, Pen, Photo, Send, Video } from "@/icons";
 import { api } from "@/lib/api";
 import { postsQuery } from "@/lib/queries";
 import { useFileUpload } from "@/hooks/use-file-upload";
+import { Avatar } from "./avatar";
 
 type Visibility = "public" | "private";
 
-export function CreatePost() {
+export function CreatePost({ userName }: { userName: string }) {
   const [content, setContent] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("public");
   const [preview, setPreview] = useState<string | null>(null);
@@ -85,11 +86,7 @@ export function CreatePost() {
       <form onSubmit={handleSubmit}>
         <div className="_feed_inner_text_area_box">
           <div className="_feed_inner_text_area_box_image">
-            <img
-              src="/assets/images/txt_img.png"
-              alt="Image"
-              className="_txt_img"
-            />
+            <Avatar name={userName} size={40} />
           </div>
           <div className="form-floating _feed_inner_text_area_box_form ">
             <textarea

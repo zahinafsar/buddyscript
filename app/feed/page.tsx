@@ -40,7 +40,9 @@ export default async function FeedPage() {
                 <div className="_layout_middle_wrap">
                   <div className="_layout_middle_inner">
                     <Stories />
-                    <CreatePost />
+                    <CreatePost
+                      userName={`${user.firstName} ${user.lastName}`}
+                    />
                     <Posts />
                   </div>
                 </div>

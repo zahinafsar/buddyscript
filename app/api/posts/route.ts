@@ -1,9 +1,9 @@
 import { NextApiRequest } from "next-ts-api";
 import { NextResponse } from "next/server";
-import { desc, eq, or } from "drizzle-orm";
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { posts, users } from "@/db/schema";
+import { likes, posts, users } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
 import { publicImageUrl } from "@/lib/storage";
 
@@ -19,6 +19,7 @@ export async function GET() {
       content: posts.content,
       imageKey: posts.imageKey,
       visibility: posts.visibility,
+      likeCount: posts.likeCount,
       createdAt: posts.createdAt,
       authorId: users.id,
       authorFirstName: users.firstName,
@@ -29,12 +30,31 @@ export async function GET() {
     .where(or(eq(posts.visibility, "public"), eq(posts.userId, user.id)))
     .orderBy(desc(posts.createdAt));
 
+  const myLikeRows = rows.length
+    ? await db
+        .select({ postId: likes.postId })
+        .from(likes)
+        .where(
+          and(
+            inArray(
+              likes.postId,
+              rows.map((row) => row.id)
+            ),
+            eq(likes.userId, user.id)
+          )
+        )
+    : [];
+
+  const myLikes = new Set(myLikeRows.map((row) => row.postId));
+
   const feed = rows.map((row) => ({
     id: row.id,
     content: row.content,
     imageUrl: row.imageKey ? publicImageUrl(row.imageKey) : null,
     visibility: row.visibility,
     createdAt: row.createdAt.toISOString(),
+    likeCount: row.likeCount,
+    likedByMe: myLikes.has(row.id),
     author: {
       id: row.authorId,
       firstName: row.authorFirstName,
