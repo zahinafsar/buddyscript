@@ -19,8 +19,14 @@ import {
   MobileMenu,
   Search,
 } from "@/icons";
+import { logout } from "@/app/(auth)/actions";
 
-export function Nav() {
+export type NavUser = {
+  name: string;
+  email: string;
+};
+
+export function Nav({ user }: { user: NavUser }) {
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light _header_nav _padd_t10">
@@ -87,7 +93,7 @@ export function Nav() {
                 </a>
               </li>
             </ul>
-            <ProfileDropdown />
+            <ProfileDropdown user={user} />
           </div>
         </div>
       </nav>
@@ -575,7 +581,7 @@ export function NotificationDropdown() {
   );
 }
 
-export function ProfileDropdown() {
+export function ProfileDropdown({ user }: { user: NavUser }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -588,7 +594,7 @@ export function ProfileDropdown() {
         />
       </div>
       <div className="_header_nav_dropdown">
-        <p className="_header_nav_para">Dylan Field</p>
+        <p className="_header_nav_para">{user.name}</p>
         <button
           className="_header_nav_dropdown_btn _dropdown_toggle"
           type="button"
@@ -611,7 +617,7 @@ export function ProfileDropdown() {
             />
           </div>
           <div className="_nav_profile_dropdown_info_txt">
-            <h4 className="_nav_dropdown_title">Dylan Field</h4>
+            <h4 className="_nav_dropdown_title">{user.name}</h4>
             <a href="profile.html" className="_nav_drop_profile">
               View Profile
             </a>
@@ -646,7 +652,14 @@ export function ProfileDropdown() {
             </a>
           </li>
           <li className="_nav_dropdown_list_item">
-            <a href="#0" className="_nav_dropdown_link">
+            <a
+              href="#0"
+              className="_nav_dropdown_link"
+              onClick={(e) => {
+                e.preventDefault();
+                logout();
+              }}
+            >
               <div className="_nav_drop_info">
                 <span>
                   <Logout />

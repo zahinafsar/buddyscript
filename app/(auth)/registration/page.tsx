@@ -1,4 +1,13 @@
+"use client";
+
+import { useActionState } from "react";
+import { register, type AuthFormState } from "@/app/(auth)/actions";
+
+const initialState: AuthFormState = { error: null };
+
 export default function RegistrationPage() {
+  const [state, formAction, pending] = useActionState(register, initialState);
+
   return (
     <section className="_social_registration_wrapper _layout_main_wrapper">
       <div className="_shape_one">
@@ -67,8 +76,36 @@ export default function RegistrationPage() {
                 <div className="_social_registration_content_bottom_txt _mar_b40">
                   <span>Or</span>
                 </div>
-                <form className="_social_registration_form">
+                <form className="_social_registration_form" action={formAction}>
                   <div className="row">
+                    <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                      <div className="_social_registration_form_input _mar_b14">
+                        <label className="_social_registration_label _mar_b8">
+                          First Name
+                        </label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          required
+                          defaultValue={state.values?.firstName}
+                          className="form-control _social_registration_input"
+                        />
+                      </div>
+                    </div>
+                    <div className="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                      <div className="_social_registration_form_input _mar_b14">
+                        <label className="_social_registration_label _mar_b8">
+                          Last Name
+                        </label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          required
+                          defaultValue={state.values?.lastName}
+                          className="form-control _social_registration_input"
+                        />
+                      </div>
+                    </div>
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                       <div className="_social_registration_form_input _mar_b14">
                         <label className="_social_registration_label _mar_b8">
@@ -76,6 +113,9 @@ export default function RegistrationPage() {
                         </label>
                         <input
                           type="email"
+                          name="email"
+                          required
+                          defaultValue={state.values?.email}
                           className="form-control _social_registration_input"
                         />
                       </div>
@@ -87,6 +127,9 @@ export default function RegistrationPage() {
                         </label>
                         <input
                           type="password"
+                          name="password"
+                          required
+                          minLength={8}
                           className="form-control _social_registration_input"
                         />
                       </div>
@@ -98,6 +141,9 @@ export default function RegistrationPage() {
                         </label>
                         <input
                           type="password"
+                          name="confirmPassword"
+                          required
+                          minLength={8}
                           className="form-control _social_registration_input"
                         />
                       </div>
@@ -122,14 +168,24 @@ export default function RegistrationPage() {
                       </div>
                     </div>
                   </div>
+                  {state.error && (
+                    <div className="row">
+                      <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                        <p style={{ color: "#e0245e", marginTop: "8px" }}>
+                          {state.error}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <div className="row">
                     <div className="col-lg-12 col-md-12 col-xl-12 col-sm-12">
                       <div className="_social_registration_form_btn _mar_t40 _mar_b60">
                         <button
-                          type="button"
+                          type="submit"
+                          disabled={pending}
                           className="_social_registration_form_btn_link _btn1"
                         >
-                          Login now
+                          {pending ? "Creating account..." : "Register"}
                         </button>
                       </div>
                     </div>
@@ -139,8 +195,8 @@ export default function RegistrationPage() {
                   <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                     <div className="_social_registration_bottom_txt">
                       <p className="_social_registration_bottom_txt_para">
-                        Dont have an account?{" "}
-                        <a href="#0">Create New Account</a>
+                        Already have an account?{" "}
+                        <a href="/login">Login</a>
                       </p>
                     </div>
                   </div>

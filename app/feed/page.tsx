@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import { LayoutWrapper } from "./layout-wrapper";
 import { Nav } from "./nav";
 import { Explore } from "./exploar";
@@ -9,11 +11,21 @@ import { Posts } from "./posts";
 import { MightLike } from "./might-like";
 import { Friends } from "./friends";
 
-export default function FeedPage() {
+export default async function FeedPage() {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+
   return (
     <LayoutWrapper>
       <div className="_main_layout">
-        <Nav />
+        <Nav
+          user={{
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+          }}
+        />
         <div className="container _custom_container">
           <div className="_layout_inner_wrap">
             <div className="row">

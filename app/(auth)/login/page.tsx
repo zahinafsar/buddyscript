@@ -1,4 +1,13 @@
+"use client";
+
+import { useActionState } from "react";
+import { login, type AuthFormState } from "@/app/(auth)/actions";
+
+const initialState: AuthFormState = { error: null };
+
 export default function LoginPage() {
+  const [state, formAction, pending] = useActionState(login, initialState);
+
   return (
     <section className="_social_login_wrapper _layout_main_wrapper">
       <div className="_shape_one">
@@ -68,7 +77,7 @@ export default function LoginPage() {
                 <div className="_social_login_content_bottom_txt _mar_b40">
                   <span>Or</span>
                 </div>
-                <form className="_social_login_form">
+                <form className="_social_login_form" action={formAction}>
                   <div className="row">
                     <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
                       <div className="_social_login_form_input _mar_b14">
@@ -77,6 +86,9 @@ export default function LoginPage() {
                         </label>
                         <input
                           type="email"
+                          name="email"
+                          required
+                          defaultValue={state.values?.email}
                           className="form-control _social_login_input"
                         />
                       </div>
@@ -88,6 +100,8 @@ export default function LoginPage() {
                         </label>
                         <input
                           type="password"
+                          name="password"
+                          required
                           className="form-control _social_login_input"
                         />
                       </div>
@@ -119,14 +133,24 @@ export default function LoginPage() {
                       </div>
                     </div>
                   </div>
+                  {state.error && (
+                    <div className="row">
+                      <div className="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                        <p style={{ color: "#e0245e", marginTop: "8px" }}>
+                          {state.error}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <div className="row">
                     <div className="col-lg-12 col-md-12 col-xl-12 col-sm-12">
                       <div className="_social_login_form_btn _mar_t40 _mar_b60">
                         <button
-                          type="button"
+                          type="submit"
+                          disabled={pending}
                           className="_social_login_form_btn_link _btn1"
                         >
-                          Login now
+                          {pending ? "Logging in..." : "Login now"}
                         </button>
                       </div>
                     </div>
@@ -137,7 +161,7 @@ export default function LoginPage() {
                     <div className="_social_login_bottom_txt">
                       <p className="_social_login_bottom_txt_para">
                         Dont have an account?{" "}
-                        <a href="#0">Create New Account</a>
+                        <a href="/registration">Create New Account</a>
                       </p>
                     </div>
                   </div>
