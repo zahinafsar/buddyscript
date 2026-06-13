@@ -1965,6 +1965,7 @@
     background: #F6F6F6;
     border-radius: 18px;
     padding: 4px 9px;
+    margin-bottom: 20px;
 }
 ._feed_inner_comment_box_form {
     display:-webkit-box;
@@ -5881,9 +5882,7 @@
 /*--- Notifications Mobile css End -----*/
 
 /*---- Comment Reply css -----*/
-._timline_comment_main {
-    padding: 24px 24px 10px;
-}
+._timline_comment_main { }
 ._comment_main {
     display: flex;
 }
@@ -5911,6 +5910,7 @@
     padding: 12px;
     border-radius: 18px;
     width: 100%;
+    min-width: 250px;
     max-width: fit-content;
     position: relative;
     margin: 0 0 50px;

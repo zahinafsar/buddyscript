@@ -1,0 +1,58 @@
+import type { ExtractNextBody, ExtractNextQuery, ExtractNextResponse, ExtractNextParams } from 'next-ts-api';
+import type { GET as GET_1 } from '../app/api/comments/[id]/replies/route';
+import type { GET as GET_2, POST as POST_2 } from '../app/api/posts/[id]/comments/route';
+import type { POST as POST_3 } from '../app/api/posts/[id]/like/route';
+import type { GET as GET_4, POST as POST_4 } from '../app/api/posts/route';
+import type { POST as POST_5 } from '../app/api/upload/route';
+
+export type ApiRoutes = {
+  'comments/[id]/replies': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_1>
+      query: ExtractNextQuery<typeof GET_1>
+      params: ExtractNextParams<typeof GET_1>
+    },
+  };
+  'posts/[id]/comments': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_2>
+      query: ExtractNextQuery<typeof GET_2>
+      params: ExtractNextParams<typeof GET_2>
+    },
+    POST: {
+      body: ExtractNextBody<typeof POST_2>
+      response: ExtractNextResponse<typeof POST_2>
+      query: ExtractNextQuery<typeof POST_2>
+      params: ExtractNextParams<typeof POST_2>
+    },
+  };
+  'posts/[id]/like': {
+    POST: {
+      body: ExtractNextBody<typeof POST_3>
+      response: ExtractNextResponse<typeof POST_3>
+      query: ExtractNextQuery<typeof POST_3>
+      params: ExtractNextParams<typeof POST_3>
+    },
+  };
+  'posts': {
+    GET: {
+      response: ExtractNextResponse<typeof GET_4>
+      query: ExtractNextQuery<typeof GET_4>
+      params: ExtractNextParams<typeof GET_4>
+    },
+    POST: {
+      body: ExtractNextBody<typeof POST_4>
+      response: ExtractNextResponse<typeof POST_4>
+      query: ExtractNextQuery<typeof POST_4>
+      params: ExtractNextParams<typeof POST_4>
+    },
+  };
+  'upload': {
+    POST: {
+      body: ExtractNextBody<typeof POST_5>
+      response: ExtractNextResponse<typeof POST_5>
+      query: ExtractNextQuery<typeof POST_5>
+      params: ExtractNextParams<typeof POST_5>
+    },
+  };
+};

@@ -31,6 +31,7 @@ export async function GET(
       imageKey: posts.imageKey,
       visibility: posts.visibility,
       likeCount: posts.likeCount,
+      commentCount: posts.commentCount,
       createdAt: posts.createdAt,
       authorId: users.id,
       authorFirstName: users.firstName,
@@ -71,6 +72,7 @@ export async function GET(
     visibility: row.visibility,
     createdAt: row.createdAt.toISOString(),
     likeCount: row.likeCount,
+    commentCount: row.commentCount,
     likedByMe: row.likedByMe,
     topLikers: row.topLikers,
     author: {

@@ -14,9 +14,7 @@ import {
   Edit,
   Hide,
   Save,
-  Camera,
   Comment,
-  Microphone,
   Share,
   ThumbsUp,
 } from "@/icons";
@@ -24,6 +22,7 @@ import { api } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
 import { postsQuery } from "@/lib/queries";
 import { Avatar } from "./avatar";
+import { Comments } from "./comments";
 
 type FeedPost = NonNullable<
   Awaited<
@@ -131,6 +130,7 @@ export function Posts() {
 
 function PostCard({ post }: { post: FeedPost["items"][number] }) {
   const queryClient = useQueryClient();
+  const [showComments, setShowComments] = useState(false);
 
   const patch = (changes: Partial<FeedPost["items"][number]>) => {
     queryClient.setQueryData(
@@ -208,7 +208,7 @@ function PostCard({ post }: { post: FeedPost["items"][number] }) {
         </div>
         <div className="_feed_inner_timeline_total_reacts_txt">
           <p className="_feed_inner_timeline_total_reacts_para1">
-            <span>12</span> Comment
+            <span>{post.commentCount}</span> Comment
           </p>
           <p className="_feed_inner_timeline_total_reacts_para2">
             <span>122</span> Share
@@ -229,7 +229,10 @@ function PostCard({ post }: { post: FeedPost["items"][number] }) {
             </span>
           </span>
         </button>
-        <button className="_feed_inner_timeline_reaction_comment _feed_reaction">
+        <button
+          className="_feed_inner_timeline_reaction_comment _feed_reaction"
+          onClick={() => setShowComments((v) => !v)}
+        >
           <span className="_feed_inner_timeline_reaction_link">
             <span>
               <Comment />
@@ -246,123 +249,11 @@ function PostCard({ post }: { post: FeedPost["items"][number] }) {
           </span>
         </button>
       </div>
-      <div className="_feed_inner_timeline_cooment_area">
-        <div className="_feed_inner_comment_box">
-          <form className="_feed_inner_comment_box_form">
-            <div className="_feed_inner_comment_box_content">
-              <div className="_feed_inner_comment_box_content_image">
-                <img
-                  src="/assets/images/comment_img.png"
-                  alt=""
-                  className="_comment_img"
-                />
-              </div>
-              <div className="_feed_inner_comment_box_content_txt">
-                <textarea
-                  className="form-control _comment_textarea"
-                  placeholder="Write a comment"
-                  id={`floatingTextarea${post.id}`}
-                ></textarea>
-              </div>
-            </div>
-            <div className="_feed_inner_comment_box_icon">
-              <button className="_feed_inner_comment_box_icon_btn">
-                <Microphone />
-              </button>
-              <button className="_feed_inner_comment_box_icon_btn">
-                <Camera />
-              </button>
-            </div>
-          </form>
+      {showComments && (
+        <div className="_feed_inner_timeline_cooment_area">
+          <Comments postId={post.id} />
         </div>
-      </div>
-      <div className="_timline_comment_main">
-        <div className="_comment_main">
-          <div className="_comment_image">
-            <a href="profile.html" className="_comment_image_link">
-              <img
-                src="/assets/images/txt_img.png"
-                alt=""
-                className="_comment_img1"
-              />
-            </a>
-          </div>
-          <div className="_comment_area">
-            <div className="_comment_details">
-              <div className="_comment_details_top">
-                <div className="_comment_name">
-                  <a href="profile.html ">
-                    <h4 className="_comment_name_title">Radovan SkillArena</h4>
-                  </a>
-                </div>
-              </div>
-              <div className="_comment_status">
-                <p className="_comment_status_text">
-                  <span>
-                    It is a long established fact that a reader will be
-                    distracted by the readable content of a page when looking at
-                    its layout.
-                  </span>
-                </p>
-              </div>
-              <div className="_total_reactions">
-                <div className="_total_react">
-                  <span className="_reaction_like">
-                    <ThumbsUp />
-                  </span>
-                </div>
-                <span className="_total">198</span>
-              </div>
-              <div className="_comment_reply">
-                <div className="_comment_reply_num">
-                  <ul className="_comment_reply_list">
-                    <li>
-                      <span>Like.</span>
-                    </li>
-                    <li>
-                      <span>Reply.</span>
-                    </li>
-                    <li>
-                      <span>Share</span>
-                    </li>
-                    <li>
-                      <span className="_time_link">.21m</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="_feed_inner_comment_box">
-              <form className="_feed_inner_comment_box_form">
-                <div className="_feed_inner_comment_box_content">
-                  <div className="_feed_inner_comment_box_content_image">
-                    <img
-                      src="/assets/images/comment_img.png"
-                      alt=""
-                      className="_comment_img"
-                    />
-                  </div>
-                  <div className="_feed_inner_comment_box_content_txt">
-                    <textarea
-                      className="form-control _comment_textarea"
-                      placeholder="Write a comment"
-                      id={`floatingTextarea2-${post.id}`}
-                    ></textarea>
-                  </div>
-                </div>
-                <div className="_feed_inner_comment_box_icon">
-                  <button className="_feed_inner_comment_box_icon_btn">
-                    <Microphone />
-                  </button>
-                  <button className="_feed_inner_comment_box_icon_btn">
-                    <Camera />
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -25,7 +25,6 @@ export function useFileUpload() {
       reset();
       setIsUploading(true);
 
-      // XMLHttpRequest instead of fetch: fetch has no upload progress events.
       const xhr = new XMLHttpRequest();
       xhrRef.current = xhr;
 
