@@ -285,6 +285,32 @@ function CommentBody({
   comment: Comment;
   onReply?: () => void;
 }) {
+  const [liked, setLiked] = useState(comment.likedByMe);
+  const [count, setCount] = useState(comment.likeCount);
+
+  const { mutate: toggleLike } = useMutation({
+    mutationFn: async () => {
+      const res = await api("comments/[id]/like", {
+        method: "POST",
+        params: { id: String(comment.id) },
+      });
+      if (!res.ok) throw new Error("Failed to like.");
+      return res.json() as Promise<{ liked: boolean; count: number }>;
+    },
+    onMutate: () => {
+      setLiked(!liked);
+      setCount(liked ? count - 1 : count + 1);
+    },
+    onSuccess: (data) => {
+      setLiked(data.liked);
+      setCount(data.count);
+    },
+    onError: () => {
+      setLiked(liked);
+      setCount(count);
+    },
+  });
+
   return (
     <div className="_comment_details">
       <div className="_comment_details_top">
@@ -299,19 +325,30 @@ function CommentBody({
           <span>{comment.content}</span>
         </p>
       </div>
-      {comment.likeCount > 0 && (
+      {count > 0 && (
         <div className="_total_reactions">
           <div className="_total_react">
             <span className="_reaction_like">
               <ThumbsUp />
             </span>
           </div>
-          <span className="_total">{comment.likeCount}</span>
+          <span className="_total">{count}</span>
         </div>
       )}
       <div className="_comment_reply">
         <div className="_comment_reply_num">
-          <ul className="_comment_reply_list">
+          <ul
+            className="_comment_reply_list"
+            style={{ display: "flex", gap: "14px" }}
+          >
+            <li>
+              <span
+                style={{ cursor: "pointer", fontWeight: liked ? 700 : 400 }}
+                onClick={() => toggleLike()}
+              >
+                {liked ? "Liked." : "Like."}
+              </span>
+            </li>
             {onReply && (
               <li>
                 <span style={{ cursor: "pointer" }} onClick={onReply}>

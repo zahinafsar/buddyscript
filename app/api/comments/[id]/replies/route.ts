@@ -1,8 +1,8 @@
 import { NextApiRequest } from "next-ts-api";
 import { NextResponse } from "next/server";
-import { and, desc, eq, lt } from "drizzle-orm";
+import { and, desc, eq, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { comments, users } from "@/db/schema";
+import { commentLikes, comments, users } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
 import { canAccessPost } from "@/lib/posts";
 import type { Comment } from "@/app/api/posts/[id]/comments/route";
@@ -44,6 +44,10 @@ export async function GET(
       id: comments.id,
       content: comments.content,
       likeCount: comments.likeCount,
+      likedByMe: sql<boolean>`exists(
+        select 1 from ${commentLikes} cl
+        where cl.comment_id = ${comments.id} and cl.user_id = ${user.id}
+      )`,
       createdAt: comments.createdAt,
       author: { firstName: users.firstName, lastName: users.lastName },
     })
