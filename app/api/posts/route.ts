@@ -1,11 +1,13 @@
 import { NextApiRequest } from "next-ts-api";
 import { NextResponse } from "next/server";
-import { and, desc, eq, inArray, or } from "drizzle-orm";
+import { desc, eq, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { likes, posts, users } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
 import { publicImageUrl } from "@/lib/storage";
+
+type Liker = { id: number; firstName: string; lastName: string };
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -24,28 +26,25 @@ export async function GET() {
       authorId: users.id,
       authorFirstName: users.firstName,
       authorLastName: users.lastName,
+      topLikers: sql<Liker[]>`coalesce((
+        select json_agg(json_build_object('id', t.id, 'firstName', t.first_name, 'lastName', t.last_name))
+        from (
+          select u.id, u.first_name, u.last_name
+          from ${likes} l
+          join ${users} u on u.id = l.user_id
+          where l.post_id = ${posts.id} and l.user_id <> ${user.id}
+          limit 5
+        ) t
+      ), '[]'::json)`,
+      likedByMe: sql<boolean>`exists(
+        select 1 from ${likes} l
+        where l.post_id = ${posts.id} and l.user_id = ${user.id}
+      )`,
     })
     .from(posts)
     .innerJoin(users, eq(posts.userId, users.id))
     .where(or(eq(posts.visibility, "public"), eq(posts.userId, user.id)))
     .orderBy(desc(posts.createdAt));
-
-  const myLikeRows = rows.length
-    ? await db
-        .select({ postId: likes.postId })
-        .from(likes)
-        .where(
-          and(
-            inArray(
-              likes.postId,
-              rows.map((row) => row.id)
-            ),
-            eq(likes.userId, user.id)
-          )
-        )
-    : [];
-
-  const myLikes = new Set(myLikeRows.map((row) => row.postId));
 
   const feed = rows.map((row) => ({
     id: row.id,
@@ -54,7 +53,8 @@ export async function GET() {
     visibility: row.visibility,
     createdAt: row.createdAt.toISOString(),
     likeCount: row.likeCount,
-    likedByMe: myLikes.has(row.id),
+    likedByMe: row.likedByMe,
+    topLikers: row.topLikers,
     author: {
       id: row.authorId,
       firstName: row.authorFirstName,

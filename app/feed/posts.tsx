@@ -11,7 +11,6 @@ import {
   Save,
   Camera,
   Comment,
-  Heart,
   Microphone,
   Share,
   ThumbsUp,
@@ -24,12 +23,6 @@ import { Avatar } from "./avatar";
 type FeedPost = NonNullable<
   Awaited<
     ReturnType<NonNullable<ReturnType<typeof postsQuery.list>["queryFn"]>>
-  >
->[number];
-
-type Likers = NonNullable<
-  Awaited<
-    ReturnType<NonNullable<ReturnType<typeof postsQuery.likers>["queryFn"]>>
   >
 >[number];
 
@@ -64,22 +57,32 @@ export function Posts() {
 
 function PostCard({ post }: { post: FeedPost }) {
   const queryClient = useQueryClient();
-  const [isLiked, setIsLiked] = useState(post.likedByMe);
+
+  const patch = (changes: Partial<FeedPost>) => {
+    queryClient.setQueryData<FeedPost[]>(postsQuery.list().queryKey, (old) =>
+      old?.map((p) => (p.id === post.id ? { ...p, ...changes } : p))
+    );
+  };
 
   const { mutate: toggleLike } = useMutation({
     mutationFn: async () => {
-      setIsLiked((prev) => !prev);
       const res = await api("posts/[id]/like", {
         method: "POST",
         params: { id: String(post.id) },
       });
       if (!res.ok) throw new Error("Failed to like.");
-      return res.json();
+      return res.json() as Promise<{ liked: boolean; count: number }>;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(postsQuery.likers(post.id));
+    onMutate: () => {
+      const prev = { likedByMe: post.likedByMe, likeCount: post.likeCount };
+      patch({
+        likedByMe: !post.likedByMe,
+        likeCount: post.likeCount + (post.likedByMe ? -1 : 1),
+      });
+      return prev;
     },
-    onError: () => setIsLiked((prev) => !prev),
+    onSuccess: ({ liked, count }) => patch({ likedByMe: liked, likeCount: count }),
+    onError: (_err, _vars, prev) => prev && patch(prev),
   });
 
   return (
@@ -116,7 +119,7 @@ function PostCard({ post }: { post: FeedPost }) {
       </div>
       <div className="_feed_inner_timeline_total_reacts _padd_r24 _padd_l24 _mar_b26">
         <div className="_feed_inner_timeline_total_reacts_image">
-          {post.likeCount > 0 && <Likers postId={post.id} />}
+          <Likers likers={post.topLikers} count={post.likeCount} />
         </div>
         <div className="_feed_inner_timeline_total_reacts_txt">
           <p className="_feed_inner_timeline_total_reacts_para1">
@@ -130,14 +133,14 @@ function PostCard({ post }: { post: FeedPost }) {
       <div className="_feed_inner_timeline_reaction">
         <button
           className={`_feed_inner_timeline_reaction_emoji _feed_reaction${
-            isLiked ? " _feed_reaction_active" : ""
+            post.likedByMe ? " _feed_reaction_active" : ""
           }`}
           onClick={() => toggleLike()}
         >
           <span className="_feed_inner_timeline_reaction_link">
             <span>
               <ThumbsUp />
-              {isLiked ? "Unlike" : "Like"}
+              {post.likedByMe ? "Unlike" : "Like"}
             </span>
           </span>
         </button>
@@ -281,12 +284,17 @@ function PostCard({ post }: { post: FeedPost }) {
 
 const MAX_VISIBLE_LIKERS = 5;
 
-function Likers({ postId }: { postId: number }) {
-  const { data } = useQuery(postsQuery.likers(postId));
-  if (!data || data.length === 0) return null;
+function Likers({
+  likers,
+  count,
+}: {
+  likers: FeedPost["topLikers"];
+  count: number;
+}) {
+  if (count === 0) return null;
 
-  const visible = data.slice(0, MAX_VISIBLE_LIKERS);
-  const extra = data.length - visible.length;
+  const visible = likers.slice(0, MAX_VISIBLE_LIKERS);
+  const extra = count - visible.length;
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>

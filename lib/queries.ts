@@ -15,19 +15,4 @@ export const postsQuery = {
         return Array.isArray(data) ? data : [];
       },
     }),
-  likers: (postId: number) =>
-    queryOptions({
-      queryKey: [...postsQuery.all, postId, "likers"],
-      queryFn: async () => {
-        const res = await api("posts/[id]/likes", {
-          method: "GET",
-          params: { id: String(postId) },
-        });
-        if (!res.ok) {
-          throw new Error("Failed to load likes.");
-        }
-        const data = await res.json();
-        return Array.isArray(data) ? data : [];
-      },
-    }),
 };
