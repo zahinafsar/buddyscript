@@ -1,6 +1,6 @@
 import { NextApiRequest } from "next-ts-api";
 import { NextResponse } from "next/server";
-import { desc, eq, or, sql } from "drizzle-orm";
+import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { likes, posts, users } from "@/db/schema";
@@ -9,11 +9,20 @@ import { publicImageUrl } from "@/lib/storage";
 
 type Liker = { id: number; firstName: string; lastName: string };
 
-export async function GET() {
+const PAGE_SIZE = 10;
+
+export async function GET(
+  request: NextApiRequest<null, { cursor?: string }>
+) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const searchParams = request.nextUrl.searchParams;
+  const cursor = Number(searchParams.get('cursor'));
+
+  const cursorFilter = cursor > 0 ? lt(posts.id, cursor) : undefined;
 
   const rows = await db
     .select({
@@ -43,10 +52,19 @@ export async function GET() {
     })
     .from(posts)
     .innerJoin(users, eq(posts.userId, users.id))
-    .where(or(eq(posts.visibility, "public"), eq(posts.userId, user.id)))
-    .orderBy(desc(posts.createdAt));
+    .where(
+      and(
+        or(eq(posts.visibility, "public"), eq(posts.userId, user.id)),
+        cursorFilter
+      )
+    )
+    .orderBy(desc(posts.id))
+    .limit(PAGE_SIZE + 1);
 
-  const feed = rows.map((row) => ({
+  const hasMore = rows.length > PAGE_SIZE;
+  const page = hasMore ? rows.slice(0, PAGE_SIZE) : rows;
+
+  const items = page.map((row) => ({
     id: row.id,
     content: row.content,
     imageUrl: row.imageKey ? publicImageUrl(row.imageKey) : null,
@@ -62,7 +80,10 @@ export async function GET() {
     },
   }));
 
-  return NextResponse.json(feed);
+  const last = page[page.length - 1];
+  const nextCursor = hasMore && last ? String(last.id) : null;
+
+  return NextResponse.json({ items, nextCursor });
 }
 
 const createPostSchema = z.object({

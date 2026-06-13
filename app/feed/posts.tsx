@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   BellActive,
   Delete,
@@ -22,13 +27,51 @@ import { Avatar } from "./avatar";
 
 type FeedPost = NonNullable<
   Awaited<
-    ReturnType<NonNullable<ReturnType<typeof postsQuery.list>["queryFn"]>>
+    ReturnType<NonNullable<ReturnType<typeof postsQuery.infinite>["queryFn"]>>
   >
->[number];
+>;
 
 export function Posts() {
-  const { data, isLoading } = useQuery(postsQuery.list());
-  const posts = data ?? [];
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery(postsQuery.infinite());
+  const posts = data?.pages.flatMap((page) => page.items) ?? [];
+
+  const listRef = useRef<HTMLDivElement>(null);
+  const [scrollEl, setScrollEl] = useState<HTMLElement | null>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+
+  useEffect(() => {
+    const list = listRef.current;
+    const container =
+      list?.closest<HTMLElement>("._layout_middle_wrap") ?? null;
+    setScrollEl(container);
+    if (list && container) {
+      setScrollMargin(
+        list.getBoundingClientRect().top -
+          container.getBoundingClientRect().top +
+          container.scrollTop,
+      );
+    }
+  }, [posts.length]);
+
+  const virtualizer = useVirtualizer({
+    count: posts.length,
+    getScrollElement: () => scrollEl,
+    estimateSize: () => 600,
+    overscan: 5,
+    scrollMargin,
+  });
+
+  const virtualItems = virtualizer.getVirtualItems();
+  const lastIndex = virtualItems.length
+    ? virtualItems[virtualItems.length - 1].index
+    : 0;
+
+  useEffect(() => {
+    if (lastIndex >= posts.length - 1 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [lastIndex, posts.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   if (isLoading) {
     return (
@@ -48,19 +91,60 @@ export function Posts() {
 
   return (
     <>
-      {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
-      ))}
+      <div
+        ref={listRef}
+        style={{
+          position: "relative",
+          height: virtualizer.getTotalSize(),
+          flexShrink: 0,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => {
+          const post = posts[item.index];
+          return (
+            <div
+              key={post.id}
+              data-index={item.index}
+              ref={virtualizer.measureElement}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                transform: `translateY(${item.start - scrollMargin}px)`,
+                paddingBottom: "16px",
+              }}
+            >
+              <PostCard post={post} />
+            </div>
+          );
+        })}
+      </div>
+      {isFetchingNextPage && (
+        <p style={{ textAlign: "center", padding: "12px", flexShrink: 0 }}>
+          Loading more...
+        </p>
+      )}
     </>
   );
 }
 
-function PostCard({ post }: { post: FeedPost }) {
+function PostCard({ post }: { post: FeedPost["items"][number] }) {
   const queryClient = useQueryClient();
 
-  const patch = (changes: Partial<FeedPost>) => {
-    queryClient.setQueryData<FeedPost[]>(postsQuery.list().queryKey, (old) =>
-      old?.map((p) => (p.id === post.id ? { ...p, ...changes } : p))
+  const patch = (changes: Partial<FeedPost["items"][number]>) => {
+    queryClient.setQueryData(
+      postsQuery.infinite().queryKey,
+      (old) =>
+        old && {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            items: page.items.map((p) =>
+              p.id === post.id ? { ...p, ...changes } : p,
+            ),
+          })),
+        },
     );
   };
 
@@ -81,12 +165,13 @@ function PostCard({ post }: { post: FeedPost }) {
       });
       return prev;
     },
-    onSuccess: ({ liked, count }) => patch({ likedByMe: liked, likeCount: count }),
+    onSuccess: ({ liked, count }) =>
+      patch({ likedByMe: liked, likeCount: count }),
     onError: (_err, _vars, prev) => prev && patch(prev),
   });
 
   return (
-    <div className="_feed_inner_timeline_post_area _b_radious6 _padd_b24 _padd_t24 _mar_b16">
+    <div className="_feed_inner_timeline_post_area _b_radious6 _padd_b24 _padd_t24">
       <div className="_feed_inner_timeline_content _padd_r24 _padd_l24">
         <div className="_feed_inner_timeline_post_top">
           <div className="_feed_inner_timeline_post_box">
@@ -288,7 +373,7 @@ function Likers({
   likers,
   count,
 }: {
-  likers: FeedPost["topLikers"];
+  likers: FeedPost["items"][number]["topLikers"];
   count: number;
 }) {
   if (count === 0) return null;

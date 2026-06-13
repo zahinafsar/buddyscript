@@ -1,18 +1,22 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export const postsQuery = {
   all: ["posts"],
-  list: () =>
-    queryOptions({
+  infinite: () =>
+    infiniteQueryOptions({
       queryKey: [...postsQuery.all],
-      queryFn: async () => {
-        const res = await api("posts", { method: "GET" });
+      queryFn: async ({ pageParam }) => {
+        const res = await api("posts", {
+          method: "GET",
+          query: pageParam ? { cursor: pageParam } : {},
+        });
         if (!res.ok) {
           throw new Error("Failed to load posts.");
         }
-        const data = await res.json();
-        return Array.isArray(data) ? data : [];
+        return res.json();
       },
+      initialPageParam: null as string | null,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
     }),
 };
