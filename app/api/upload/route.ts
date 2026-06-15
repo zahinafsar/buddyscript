@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { uploadImage } from "@/lib/storage";
+import { NextApiRequest } from "next-ts-api";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES: Record<string, string> = {
@@ -10,7 +11,7 @@ const ALLOWED_TYPES: Record<string, string> = {
   "image/gif": "gif",
 };
 
-export async function POST(request: Request) {
+export async function POST(request: NextApiRequest<{ file: File }>) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
