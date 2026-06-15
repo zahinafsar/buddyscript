@@ -5,7 +5,8 @@ type EnvKey =
   | "MINIO_PORT"
   | "MINIO_ACCESS_KEY"
   | "MINIO_SECRET_KEY"
-  | "MINIO_BUCKET";
+  | "MINIO_BUCKET"
+  | "MINIO_PUBLIC_URL";
 
 export function env(name: EnvKey): string {
   const value = process.env[name];

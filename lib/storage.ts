@@ -52,5 +52,5 @@ export async function uploadImage(
 }
 
 export function publicImageUrl(key: string): string {
-  return `http://${env("MINIO_ENDPOINT")}:${env("MINIO_PORT")}/${BUCKET}/${key}`;
+  return `${env("MINIO_PUBLIC_URL")}/${BUCKET}/${key}`;
 }

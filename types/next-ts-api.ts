@@ -10,7 +10,6 @@ export type ApiRoutes = {
   'comments/[id]/like': {
     POST: {
       body: ExtractNextBody<typeof POST_1>
-      form: ExtractNextBody<typeof POST_1>
       response: ExtractNextResponse<typeof POST_1>
       query: ExtractNextQuery<typeof POST_1>
       params: ExtractNextParams<typeof POST_1>
@@ -31,7 +30,6 @@ export type ApiRoutes = {
     },
     POST: {
       body: ExtractNextBody<typeof POST_3>
-      form: ExtractNextBody<typeof POST_3>
       response: ExtractNextResponse<typeof POST_3>
       query: ExtractNextQuery<typeof POST_3>
       params: ExtractNextParams<typeof POST_3>
@@ -40,7 +38,6 @@ export type ApiRoutes = {
   'posts/[id]/like': {
     POST: {
       body: ExtractNextBody<typeof POST_4>
-      form: ExtractNextBody<typeof POST_4>
       response: ExtractNextResponse<typeof POST_4>
       query: ExtractNextQuery<typeof POST_4>
       params: ExtractNextParams<typeof POST_4>
@@ -54,7 +51,6 @@ export type ApiRoutes = {
     },
     POST: {
       body: ExtractNextBody<typeof POST_5>
-      form: ExtractNextBody<typeof POST_5>
       response: ExtractNextResponse<typeof POST_5>
       query: ExtractNextQuery<typeof POST_5>
       params: ExtractNextParams<typeof POST_5>
@@ -63,7 +59,6 @@ export type ApiRoutes = {
   'upload': {
     POST: {
       body: ExtractNextBody<typeof POST_6>
-      form: ExtractNextBody<typeof POST_6>
       response: ExtractNextResponse<typeof POST_6>
       query: ExtractNextQuery<typeof POST_6>
       params: ExtractNextParams<typeof POST_6>
