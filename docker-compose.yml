@@ -1,14 +1,14 @@
 services:
-  postgres:
+  db:
     image: postgres:16-alpine
     ports:
-      - "15432:5432"
+      - "5435:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: buddyscript
+      POSTGRES_PASSWORD: buddyscript
       POSTGRES_DB: buddyscript
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - buddyscript:/var/lib/postgresql/data
 
   minio:
     image: minio/minio
@@ -23,5 +23,5 @@ services:
       - miniodata:/data
 
 volumes:
-  pgdata:
+  buddyscript:
   miniodata:
